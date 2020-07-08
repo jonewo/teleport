@@ -5,9 +5,6 @@ FROM quay.io/gravitational/buildbox-base:1.0
 ARG UID
 ARG GID
 
-COPY pam/pam_teleport.so /lib/x86_64-linux-gnu/security
-COPY pam/teleport-* /etc/pam.d/
-
 RUN apt-get update; apt-get install -q -y libpam-dev libc6-dev-i386 net-tools tree
 
 RUN (groupadd jenkins --gid=$GID -o && useradd jenkins --uid=$UID --gid=$GID --create-home --shell=/bin/sh ;\
@@ -28,6 +25,10 @@ RUN mkdir -p /opt && cd /opt && curl https://go-boringcrypto.storage.googleapis.
 ENV GOPATH="/gopath" \
     GOROOT="/opt/go" \
     PATH="$PATH:/opt/go/bin:/gopath/bin:/gopath/src/github.com/gravitational/teleport/build"
+
+# Install PAM module and policies for testing.
+COPY pam/ /opt/pam_teleport/
+RUN make -C /opt/pam_teleport install
 
 VOLUME ["/gopath/src/github.com/gravitational/teleport"]
 EXPOSE 6600 2379 2380

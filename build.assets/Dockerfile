@@ -5,9 +5,6 @@ FROM quay.io/gravitational/buildbox-base:1.0
 ARG UID
 ARG GID
 
-COPY pam/pam_teleport.so /lib/x86_64-linux-gnu/security
-COPY pam/teleport-* /etc/pam.d/
-
 RUN apt-get update; apt-get install -q -y libpam-dev libc6-dev-i386 net-tools tree
 
 RUN (groupadd jenkins --gid=$GID -o && useradd jenkins --uid=$UID --gid=$GID --create-home --shell=/bin/sh ;\
@@ -33,6 +30,10 @@ ENV GOPATH="/gopath" \
 RUN (curl -L https://github.com/golangci/golangci-lint/releases/download/v1.24.0/golangci-lint-1.24.0-$(go env GOOS)-$(go env GOARCH).tar.gz | tar -xz ;\
      cp golangci-lint-1.24.0-$(go env GOOS)-$(go env GOARCH)/golangci-lint /bin/ ;\
      rm -r golangci-lint*)
+
+# Install PAM module and policies for testing.
+COPY pam/ /opt/pam_teleport/
+RUN make -C /opt/pam_teleport install
 
 VOLUME ["/gopath/src/github.com/gravitational/teleport"]
 EXPOSE 6600 2379 2380

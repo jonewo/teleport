@@ -11,9 +11,6 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 ENV LC_CTYPE=en_US.UTF-8
 
-COPY pam/pam_teleport.so /lib/x86_64-linux-gnu/security
-COPY pam/teleport-* /etc/pam.d/
-
 RUN yum makecache fast && yum -y install gcc pam-devel glibc-devel net-tools tree git zip && yum clean all
 
 RUN (groupadd jenkins --gid=$GID -o && useradd jenkins --uid=$UID --gid=$GID --create-home --shell=/bin/sh ;\
@@ -41,6 +38,10 @@ RUN mkdir -p /go-bootstrap && cd /go-bootstrap && curl https://dl.google.com/go/
 ENV GOPATH="/gopath" \
     GOROOT="/opt/go" \
     PATH="$PATH:/opt/go/bin:/gopath/bin:/gopath/src/github.com/gravitational/teleport/build"
+
+# Install PAM module and policies for testing.
+COPY pam/ /opt/pam_teleport/
+RUN make -C /opt/pam_teleport install
 
 VOLUME ["/gopath/src/github.com/gravitational/teleport"]
 EXPOSE 6600 2379 2380

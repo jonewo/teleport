@@ -50,7 +50,7 @@ build-binaries: bbox
 # binaries and docs
 #
 .PHONY:bbox
-bbox: pam
+bbox:
 	docker build \
 		--build-arg UID=$$(id -u) \
 		--build-arg GID=$$(id -g) \
@@ -61,7 +61,7 @@ bbox: pam
 # Builds a Docker buildbox for FIPS
 #
 .PHONY:bbox-fips
-bbox-fips: pam
+bbox-fips:
 	docker build \
 		--build-arg UID=$$(id -u) \
 		--build-arg GID=$$(id -g) \
@@ -72,7 +72,7 @@ bbox-fips: pam
 # Builds a Docker container for CentOS 6 builds
 #
 .PHONY:bbox-centos6
-bbox-centos6: pam
+bbox-centos6:
 	docker build \
 		--build-arg UID=$$(id -u) \
 		--build-arg GID=$$(id -g) \
@@ -83,7 +83,7 @@ bbox-centos6: pam
 # Builds a Docker buildbox for CentOS 6 FIPS builds
 #
 .PHONY:bbox-centos6-fips
-bbox-centos6-fips: pam
+bbox-centos6-fips:
 	docker build \
 		--build-arg UID=$$(id -u) \
 		--build-arg GID=$$(id -g) \
@@ -108,7 +108,6 @@ docsbox:
 clean:
 	docker image rm --force $(BBOX)
 	docker image rm --force $(DOCSBOX)
-	rm -r pam
 
 #
 # Runs tests inside a build container
@@ -221,9 +220,3 @@ release-centos6-fips: bbox-centos6-fips
 release-windows: bbox
 	docker run $(DOCKERFLAGS) -i $(NOROOT) $(BBOX) \
 		/usr/bin/make release -e ADDFLAGS="$(ADDFLAGS)" OS=windows
-
-.PHONY:pam
-pam:
-	make -C ../modules/pam_teleport
-	rm pam/* || mkdir -p pam
-	cp ../modules/pam_teleport/pam_teleport.so ../modules/pam_teleport/policy/* pam/
